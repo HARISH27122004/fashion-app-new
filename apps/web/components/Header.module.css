@@ -1,0 +1,488 @@
+/* ════════════════════════════════════════════════════════════
+   DESKTOP HEADER  (>768px only)
+════════════════════════════════════════════════════════════ */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--color-bg);
+  /* border-bottom: 1px solid var(--color-border); */
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1),
+              opacity  0.3s cubic-bezier(0.4,0,0.2,1);
+  will-change: transform;
+}
+.headerVisible { transform: translateY(0); opacity: 1; }
+.headerHidden  { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-height);
+  padding: var(--nav-padding);
+  max-width: var(--max-width);
+  margin: 0 auto;
+  width: 100%;
+  position: relative;
+}
+
+/* Left */
+.navLeft {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex: 1;
+}
+
+.navLink {
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.02em;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+.navLink:hover, .navLinkActive { color: var(--color-text-primary); }
+
+/* Center brand — absolutely centered */
+.brand {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: var(--font-extrabold);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.pageTitle {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: var(--font-semibold);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Right */
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+/* Shared icon button — desktop */
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.18s ease;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.iconBtn:hover { background: var(--color-surface); }
+.iconBtn:active { transform: scale(0.93); }
+.iconBtnActive  { background: var(--color-surface); }
+
+.badge {
+  position: absolute;
+  top: 5px; right: 5px;
+  min-width: 16px; height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--color-black);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-sans);
+  border: 2px solid var(--color-bg);
+}
+
+.iconBtnDot {
+  position: absolute;
+  bottom: 7px; right: 7px;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--color-black);
+  border: 1.5px solid var(--color-bg);
+}
+
+/* Back button — desktop */
+.backBtn {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  background: none; border: none; cursor: pointer; padding: 0;
+  transition: color 0.2s ease;
+}
+.backBtn:hover { color: var(--color-text-primary); }
+
+/* ════════════════════════════════════════════════════════════
+   MOBILE TOP BAR  (≤768px only)
+   Layout: [+ btn]  [BRAND centered]  [bookmark icon]
+════════════════════════════════════════════════════════════ */
+.mobileHeader {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--color-bg);
+  /* border-bottom: 1px solid var(--color-border); */
+}
+
+.mobileInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  padding: 0 14px;
+  position: relative;
+}
+
+/* + menu button */
+.mobilePlusBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  /* border: 1.5px solid var(--color-border); */
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 18px;
+  font-family: var(--font-sans);
+}
+.mobilePlusBtn:hover { background: var(--color-surface); }
+.mobilePlusBtn:active { transform: scale(0.93); }
+
+/* Mobile back button */
+.mobileBackBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+}
+.mobileBackBtn:hover { background: var(--color-surface); }
+.mobileBackBtn:active { transform: scale(0.93); }
+
+/* Brand — absolutely centered in mobile top bar */
+.mobileBrand {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: var(--font-extrabold);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.mobilePageTitle {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+}
+
+/* Bookmark icon on right */
+.mobileIconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: background 0.18s ease;
+}
+.mobileIconBtn:hover { background: var(--color-surface); }
+
+/* ════════════════════════════════════════════════════════════
+   MOBILE BOTTOM GLASSMORPHISM PILL BAR  (≤768px only)
+   — Matches screenshot: frosted blur pill, centered at bottom
+   — Hides on scroll down, reveals smoothly on scroll up
+════════════════════════════════════════════════════════════ */
+.mobilePillWrap {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* smooth hide/show transition */
+  transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity   0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
+}
+
+/* Visible state (default / scroll up) */
+.pillWrapVisible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Hidden state (scroll down) */
+.pillWrapHidden {
+  transform: translateX(-50%) translateY(calc(100% + 36px));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mobilePill {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-width: 260px;
+  justify-content: space-around;
+  border-radius: 100px;
+  padding: 8px 6px;
+
+  /* NO overflow:hidden — it kills backdrop-filter in Chrome/Safari */
+
+  /* Opaque enough base so blur has material to smear */
+  background: rgba(185, 185, 192, 0.72);
+
+  /* Heavy blur */
+  backdrop-filter: blur(40px) saturate(180%) brightness(1.1);
+  -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.1);
+
+  border: 1px solid rgba(255, 255, 255, 0.60);
+
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.22),
+    0 2px  8px  rgba(0, 0, 0, 0.12),
+    inset 0  1.5px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px  0 rgba(0, 0, 0, 0.05);
+
+  /* Force GPU compositing so blur renders correctly */
+
+}
+
+/* Each icon button inside the pill */
+.pillBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  /* Icon color matching screenshot — medium-dark on frosted bg */
+  color: rgba(30, 30, 40, 0.72);
+  cursor: pointer;
+  position: relative;
+  text-decoration: none;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.14s ease;
+  flex-shrink: 0;
+}
+.pillBtn:hover  {
+  background: rgba(0, 0, 0, 0.08);
+  color: #0a0a0f;
+}
+.pillBtn:active { transform: scale(0.88); }
+.pillBtnActive  { color: #0a0a0f; }
+
+/* Badge on pill buttons */
+.pillBadge {
+  position: absolute;
+  top: 8px; right: 8px;
+  min-width: 15px; height: 15px;
+  padding: 0 3px;
+  border-radius: 8px;
+  background: #111;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-sans);
+  border: 1.5px solid rgba(255,255,255,0.75);
+}
+
+/* Active search dot in pill */
+.pillActiveDot {
+  position: absolute;
+  bottom: 9px; right: 11px;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: #111;
+}
+
+/* ════════════════════════════════════════════════════════════
+   SLIDE-IN MENU PANEL (left drawer — desktop + mobile)
+════════════════════════════════════════════════════════════ */
+.menuOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: transparent;
+  pointer-events: none;
+}
+.menuOverlayOpen {
+  background: rgba(0,0,0,0.52);
+  pointer-events: auto;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: overlayIn 0.28s ease forwards;
+}
+@keyframes overlayIn {
+  from { background: transparent; }
+  to   { background: rgba(0,0,0,0.52); }
+}
+
+.menuPanel {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: min(320px, 85vw);
+  background: #111;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.36s cubic-bezier(0.4,0,0.2,1);
+  overflow-y: auto;
+}
+.menuPanelOpen { transform: translateX(0); }
+
+.menuTop {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 30px 28px 22px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.menuBrand {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: var(--font-extrabold);
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+}
+
+.menuCloseBtn {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.menuCloseBtn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+.menuList {
+  list-style: none;
+  padding: 16px 14px 0;
+  margin: 0;
+  display: flex; flex-direction: column; gap: 2px;
+  flex: 1;
+}
+
+.menuLink {
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: rgba(255,255,255,0.5);
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.menuLink:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+.menuLinkActive { background: rgba(255,255,255,0.1); color: #fff; }
+
+.menuLinkIcon {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: 9px;
+  background: rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+
+.menuLinkLabel {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: var(--font-semibold);
+  flex: 1;
+}
+
+.menuBadge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 22px; height: 22px;
+  padding: 0 6px;
+  border-radius: 11px;
+  background: #fff;
+  color: #111;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.menuFooter { padding: 24px 28px 40px; }
+.menuFooterText {
+  font-size: 11px;
+  color: rgba(255,255,255,0.18);
+  letter-spacing: 0.05em;
+  font-family: var(--font-sans);
+}
+
+/* ════════════════════════════════════════════════════════════
+   BREAKPOINTS
+════════════════════════════════════════════════════════════ */
+@media (min-width: 769px) {
+  .mobileHeader   { display: none !important; }
+  .mobilePillWrap { display: none !important; }
+}
+
+@media (max-width: 768px) {
+  .header         { display: none !important; }
+  .mobileHeader   { display: block; }
+  .mobilePillWrap { display: flex; }
+}

@@ -1,0 +1,223 @@
+/* ─── Card ───────────────────────────────────────────────────── */
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  animation: fadeUp 0.4s ease both;
+  position: relative;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Image ──────────────────────────────────────────────────── */
+.imageWrap {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: #f0eeeb;
+  flex-shrink: 0;
+}
+
+.image {
+  display: block;
+  object-fit: cover;
+  transition: transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+
+.imageWrap:hover .image { transform: scale(1.06); }
+
+/* Bookmark top-right */
+.bookmarkOverlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(4px);
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.bookmarkOverlay:hover { background: #fff; color: #111; transform: scale(1.1); }
+.bookmarkOverlay.bookmarked { background: #111; color: #fff; }
+
+/* ─── Info below image ───────────────────────────────────────── */
+.info {
+  padding: 12px 4px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.name {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  transition: color 0.18s ease;
+}
+
+.name:hover { color: var(--color-text-secondary); }
+
+/* ─── Price + controls row ───────────────────────────────────── */
+.bottomRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.priceWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.originalPrice {
+  font-size: 11px;
+  color: #aaa;
+  text-decoration: line-through;
+  line-height: 1.2;
+  height: 14px;
+  display: block;
+  font-family: var(--font-sans);
+}
+
+.originalPrice.noDiscount { visibility: hidden; }
+
+.price {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  letter-spacing: 0.01em;
+}
+
+/* ─── Single add button (qty = 0) ────────────────────────────── */
+.addBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.addBtn:hover {
+  background: var(--color-black);
+  border-color: var(--color-black);
+  color: #fff;
+  transform: scale(1.08);
+}
+
+.addBtn:active { transform: scale(0.92); }
+
+/* ─── Qty row (qty > 0): − count + ──────────────────────────── */
+.qtyRow {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 30px;
+  border-radius: 15px;
+  border: 1.5px solid var(--color-black);
+  background: var(--color-black);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.qtyBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.qtyBtn:hover  { background: rgba(255,255,255,0.15); }
+.qtyBtn:active { background: rgba(255,255,255,0.25); }
+
+.qtyCount {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+  min-width: 18px;
+  text-align: center;
+  user-select: none;
+}
+
+/* ─── Discount badge ─────────────────────────────────────────── */
+.discountBadge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 3;
+  background: #111;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 2px;
+  pointer-events: none;
+  letter-spacing: 0.03em;
+}
+
+/* ─── Sold out overlay ───────────────────────────────────────── */
+.soldOutOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+}
+
+.soldOutText {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: var(--font-bold);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #111;
+  border: 1.5px solid #111;
+  padding: 6px 14px;
+}

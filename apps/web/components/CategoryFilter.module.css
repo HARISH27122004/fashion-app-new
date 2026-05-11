@@ -1,0 +1,43 @@
+.container {
+  width: 100%;
+}
+
+.scrollWrap {
+  display: flex;
+  position: relative;
+  top: 20px;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollWrap::-webkit-scrollbar { display: none; }
+
+.pill {
+  flex-shrink: 0;
+  padding: 8px 20px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: var(--font-medium);
+  letter-spacing: 0.5px;
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pill:hover {
+  border-color: var(--color-text-secondary);
+  color: var(--color-text-primary);
+}
+
+.pill.active {
+  background: var(--color-black);
+  color: var(--color-white);
+  border-color: var(--color-black);
+}

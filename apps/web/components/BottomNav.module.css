@@ -1,0 +1,103 @@
+.nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--max-width-mobile);
+  background: rgba(252, 251, 249, 0.94);
+  border-top: 1px solid #e8e5e0;
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+@media (min-width: 768px) {
+  .nav {
+    max-width: var(--max-width-desktop);
+  }
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: var(--bottom-nav-height);
+  padding: 0 var(--space-sm);
+}
+
+/* ── Nav item ─────────────────────────────────────── */
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: 1;
+  height: 100%;
+  color: #b0aca5;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.item:hover {
+  color: #555;
+}
+
+.item.active {
+  color: #1a1a1a;
+}
+
+/* ── Icon + badge ─────────────────────────────────── */
+.iconWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
+/* Active indicator dot under icon */
+.item.active .iconWrap::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #1a1a1a;
+}
+
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-family: var(--font-sans);
+}
+
+/* ── Label ────────────────────────────────────────── */
+.label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+}

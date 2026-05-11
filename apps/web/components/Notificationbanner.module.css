@@ -1,0 +1,121 @@
+/* ── Container: fixed top-center ── */
+.container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: min(400px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+/* ── Toast card — glassmorphism green ── */
+.toast {
+  pointer-events: all;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+
+  /* Transparent green glass */
+  background: rgba(34, 154, 92, 0.82);
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  box-shadow:
+    0 8px 32px rgba(34, 154, 92, 0.30),
+    0 2px 8px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.20);
+
+  /* Entrance: hidden above */
+  opacity: 0;
+  transform: translateY(-20px) scale(0.95);
+  transition:
+    opacity 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.toast.hiding {
+  opacity: 0;
+  transform: translateY(-12px) scale(0.96);
+  transition:
+    opacity 0.22s ease-in,
+    transform 0.22s ease-in;
+}
+
+/* ── Icon circle ── */
+.iconWrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* ── Text ── */
+.body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.message {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* ── Close button ── */
+.closeBtn {
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  padding: 0;
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+@media (max-width: 480px) {
+  .container {
+    top: 12px;
+    width: calc(100vw - 24px);
+  }
+}
