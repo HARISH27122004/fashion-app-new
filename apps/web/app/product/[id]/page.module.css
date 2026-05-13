@@ -133,7 +133,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
-  z-index: 100;
+  z-index: 10;
   animation: fadeInUp 0.4s ease 0.3s both;
 }
 

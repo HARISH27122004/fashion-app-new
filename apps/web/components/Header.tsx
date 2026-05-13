@@ -16,32 +16,63 @@ type RouteConfig = {
   showSearch?: boolean;
   showBack?: boolean;
   title?: string;
+  backFallback?: string;
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Route → config mapping.
+// showBack=true  → back button replaces left-side nav (all non-home pages).
+// showMenu=true  → hamburger + nav links shown instead.
+// The Home page (/) is the only one that gets showMenu without showBack.
+// ─────────────────────────────────────────────────────────────────────────────
 function getRouteConfig(pathname: string): RouteConfig {
-  if (pathname === "/")                 return { showMenu: true, showSearch: true };
-  if (pathname === "/bookmarks")        return { showMenu: true, showSearch: true, title: "SAVED" };
-  if (pathname === "/cart")             return { showMenu: true, showSearch: true, title: "BAG" };
-  if (pathname === "/notification")     return { showMenu: true, showSearch: true, title: "NOTIFICATIONS" };
-  if (pathname === "/orders")           return { showMenu: true, showSearch: true, title: "ORDERS" };
-  if (pathname.startsWith("/product/")) return { showBack: true, title: "DETAILS" };
-  if (pathname === "/cart/address")     return { showBack: true, title: "ADDRESS" };
-  if (pathname === "/cart/payment")     return { showBack: true, title: "PAYMENT" };
-  return { showMenu: true };
+  if (pathname === "/")
+    return { showMenu: true, showSearch: true };
+
+  // ── Main nav pages (still show menu icons on desktop, back on mobile) ──
+  if (pathname === "/bookmarks")
+    return { showMenu: true, showSearch: true, showBack: true, title: "SAVED",         backFallback: "/" };
+  if (pathname === "/cart")
+    return { showMenu: true, showSearch: true, showBack: true, title: "BAG",           backFallback: "/" };
+  if (pathname === "/notification")
+    return { showMenu: true, showSearch: true, showBack: true, title: "NOTIFICATIONS", backFallback: "/" };
+  if (pathname === "/orders")
+    return { showMenu: true, showSearch: true, showBack: true, title: "ORDERS",        backFallback: "/" };
+
+  // ── Deep / checkout pages ──
+  if (pathname === "/login")
+    return { showBack: true, title: "SIGN IN",  backFallback: "/" };
+  if (pathname.startsWith("/product/"))
+    return { showBack: true, title: "DETAILS",  backFallback: "/" };
+  if (pathname === "/cart/address")
+    return { showBack: true, title: "ADDRESS",  backFallback: "/cart" };
+  if (pathname === "/cart/payment")
+    return { showBack: true, title: "PAYMENT",  backFallback: "/cart/address" };
+
+  // ── Fallback: any unknown route gets a back button ──
+  return { showBack: true, backFallback: "/" };
 }
 
 interface HeaderProps {
+  /** Override: force show/hide the hamburger menu */
   showMenu?: boolean;
+  /** Override: force show/hide the search icon */
   showSearch?: boolean;
+  /** Override: force show/hide the back button */
   showBack?: boolean;
+  /** Override: page title shown in the center */
   title?: string;
+  /**
+   * Hard URL override — if set the back button always pushes this exact URL
+   * instead of using router.back() / the route-config fallback.
+   */
   backHref?: string;
 }
 
 // Desktop left nav links
 const NAV_LINKS = [
-  { href: "/", label: "New in" },
-  { href: "/bookmarks", label: "Saved" },
+  { href: "/",          label: "New in" },
+  { href: "/bookmarks", label: "Saved"  },
 ];
 
 // Desktop right icon buttons
@@ -135,9 +166,8 @@ const MOBILE_PILL_ITEMS = [
 ];
 
 export default function Header(props: HeaderProps) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [menuOpen,   setMenuOpen]   = useState(false);
-  // Track pill visibility based on scroll direction
+  const [drawerOpen,  setDrawerOpen]  = useState(false);
+  const [menuOpen,    setMenuOpen]    = useState(false);
   const [pillVisible, setPillVisible] = useState(true);
   const lastScrollY = useRef(0);
 
@@ -152,22 +182,15 @@ export default function Header(props: HeaderProps) {
   const cartCount  = cartItems.reduce((sum, i) => sum + i.quantity, 0);
   const notifCount = notifications.length;
 
-  // Hide pill on scroll down, show on scroll up
+  // Hide pill on scroll-down, reveal on scroll-up
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY;
       const diff = currentY - lastScrollY.current;
-
-      if (diff > 6 && currentY > 80) {
-        // Scrolling down — hide pill
-        setPillVisible(false);
-      } else if (diff < -6) {
-        // Scrolling up — show pill
-        setPillVisible(true);
-      }
+      if (diff > 6 && currentY > 80) setPillVisible(false);
+      else if (diff < -6)            setPillVisible(true);
       lastScrollY.current = currentY;
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -186,40 +209,79 @@ export default function Header(props: HeaderProps) {
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
-  const auto       = getRouteConfig(pathname);
-  const showMenu   = props.showMenu   ?? auto.showMenu   ?? false;
-  const showSearch = props.showSearch ?? auto.showSearch ?? false;
-  const showBack   = props.showBack   ?? auto.showBack   ?? false;
-  const pageTitle  = props.title      ?? auto.title      ?? null;
-  const isHome     = pathname === "/";
+  // ── Resolve config: props override auto-detected route config ──────────────
+  const auto         = getRouteConfig(pathname);
+  const showMenu     = props.showMenu   ?? auto.showMenu   ?? false;
+  const showSearch   = props.showSearch ?? auto.showSearch ?? false;
+  const showBack     = props.showBack   ?? auto.showBack   ?? false;
+  const pageTitle    = props.title      ?? auto.title      ?? null;
+  const backFallback = auto.backFallback ?? "/";
+  const isHome       = pathname === "/";
 
+  // ── Smart back navigation ──────────────────────────────────────────────────
+  // Priority:
+  //   1. props.backHref  → hard URL override from caller
+  //   2. window.history.length > 1 → real browser history → router.back()
+  //   3. route-config backFallback → safe landing page for direct URL visits
   function handleBack() {
-    if (props.backHref) router.push(props.backHref);
-    else router.back();
+    if (props.backHref) {
+      router.push(props.backHref);
+      return;
+    }
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push(backFallback);
+    }
   }
+  // ──────────────────────────────────────────────────────────────────────────
+
+  // ── Back button JSX (reused in both desktop + mobile headers) ─────────────
+  const BackButton = ({ mobile = false }: { mobile?: boolean }) => (
+    <button
+      className={mobile ? styles.mobileBackBtn : styles.backBtn}
+      onClick={handleBack}
+      aria-label="Go back"
+    >
+      <svg
+        width={mobile ? 20 : 16}
+        height={mobile ? 20 : 16}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <polyline points="15 18 9 12 15 6" />
+      </svg>
+      {!mobile && <span>Back</span>}
+    </button>
+  );
+  // ──────────────────────────────────────────────────────────────────────────
 
   return (
     <>
       {/* ═══════════════════════════════════════════════════════
           DESKTOP HEADER — hidden on ≤768px
       ═══════════════════════════════════════════════════════ */}
-      <header className={`${styles.header} ${headerVisible ? styles.headerVisible : styles.headerHidden}`}>
+      <header
+        className={`${styles.header} ${headerVisible ? styles.headerVisible : styles.headerHidden}`}
+      >
         <div className={styles.inner}>
           {/* LEFT */}
           <div className={styles.navLeft}>
             {showBack ? (
-              <button className={styles.backBtn} onClick={handleBack} aria-label="Go back">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-                Back
-              </button>
+              <BackButton />
             ) : (
               <>
                 {showMenu && (
-                  <button className={styles.iconBtn} onClick={() => setMenuOpen(true)}
-                    aria-label="Open menu" style={{ marginRight: 4 }}>
+                  <button
+                    className={styles.iconBtn}
+                    onClick={() => setMenuOpen(true)}
+                    aria-label="Open menu"
+                    style={{ marginRight: 4 }}
+                  >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
                       stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                       <line x1="3" y1="6" x2="21" y2="6" />
@@ -229,8 +291,11 @@ export default function Header(props: HeaderProps) {
                   </button>
                 )}
                 {NAV_LINKS.map(({ href, label }) => (
-                  <Link key={href} href={href}
-                    className={`${styles.navLink} ${pathname === href ? styles.navLinkActive : ""}`}>
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`${styles.navLink} ${pathname === href ? styles.navLinkActive : ""}`}
+                  >
                     {label}
                   </Link>
                 ))}
@@ -249,7 +314,9 @@ export default function Header(props: HeaderProps) {
             {showSearch && (
               <button
                 className={`${styles.iconBtn} ${searchQuery.trim() ? styles.iconBtnActive : ""}`}
-                onClick={() => setDrawerOpen(true)} aria-label="Search">
+                onClick={() => setDrawerOpen(true)}
+                aria-label="Search"
+              >
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <circle cx="10.5" cy="10.5" r="6.5" />
@@ -263,7 +330,9 @@ export default function Header(props: HeaderProps) {
               return (
                 <Link key={`d-${label}`} href={href} className={styles.iconBtn} aria-label={label}>
                   {icon}
-                  {count > 0 && <span className={styles.badge}>{count > 9 ? "9+" : count}</span>}
+                  {count > 0 && (
+                    <span className={styles.badge}>{count > 9 ? "9+" : count}</span>
+                  )}
                 </Link>
               );
             })}
@@ -276,29 +345,31 @@ export default function Header(props: HeaderProps) {
       ═══════════════════════════════════════════════════════ */}
       <header className={styles.mobileHeader}>
         <div className={styles.mobileInner}>
-
-          {/* Left: + menu OR back button */}
+          {/* Left: hamburger OR back button — back takes priority on ALL non-home pages */}
           {showBack ? (
-            <button className={styles.mobileBackBtn} onClick={handleBack} aria-label="Go back">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-            </button>
+            <BackButton mobile />
           ) : (
-            <button className={styles.mobilePlusBtn} onClick={() => setMenuOpen(true)} aria-label="Open menu">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            <button
+              className={styles.mobilePlusBtn}
+              onClick={() => setMenuOpen(true)}
+              aria-label="Open menu"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
             </button>
           )}
 
-          {/* Center: brand name */}
+          {/* Center: brand on home, page title everywhere else */}
           {isHome
             ? <Link href="/" className={styles.mobileBrand}>𝕱𝖆𝖘𝖍𝖎𝖔𝖓𝕯𝖎𝖗𝖙</Link>
             : <span className={styles.mobilePageTitle}>{pageTitle}</span>
           }
 
-          {/* Right: bookmark icon */}
+          {/* Right: bookmark shortcut */}
           <Link href="/bookmarks" className={styles.mobileIconBtn} aria-label="Saved">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -310,13 +381,13 @@ export default function Header(props: HeaderProps) {
 
       {/* ═══════════════════════════════════════════════════════
           MOBILE BOTTOM GLASSMORPHISM PILL BAR
-          shown only on ≤768px — floats above content
-          Hides on scroll down, reveals on scroll up
       ═══════════════════════════════════════════════════════ */}
-      <div className={`${styles.mobilePillWrap} ${pillVisible ? styles.pillWrapVisible : styles.pillWrapHidden}`}>
+      <div
+        className={`${styles.mobilePillWrap} ${pillVisible ? styles.pillWrapVisible : styles.pillWrapHidden}`}
+      >
         <nav className={styles.mobilePill} aria-label="Main navigation">
           {MOBILE_PILL_ITEMS.map(({ key, label, href, icon, showCart, showNotif }) => {
-            const count = (showCart ? cartCount : 0) + (showNotif ? notifCount : 0);
+            const count = (showCart ? cartCount : 0) + ((showNotif as any) ? notifCount : 0);
             const isActive = href
               ? (href === "/" ? pathname === "/" : pathname.startsWith(href))
               : false;
@@ -352,14 +423,13 @@ export default function Header(props: HeaderProps) {
         </nav>
       </div>
 
-      {/* Search Drawer — slides from top on desktop, from bottom on mobile */}
+      {/* Search Drawer */}
       {showSearch && (
         <SearchDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          SLIDE-IN MENU PANEL (desktop hamburger + mobile + btn)
-          Admin link removed
+          SLIDE-IN MENU PANEL
       ═══════════════════════════════════════════════════════ */}
       {showMenu && (
         <div
@@ -373,7 +443,7 @@ export default function Header(props: HeaderProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className={styles.menuTop}>
-              <span className={styles.menuBrand}>WELCOME</span>
+              <span className={styles.menuBrand}>STUDIO DIRT</span>
               <button className={styles.menuCloseBtn} onClick={() => setMenuOpen(false)}>
                 <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
                   <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
@@ -407,7 +477,6 @@ export default function Header(props: HeaderProps) {
                   href: "/login", label: "Sign In",
                   icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 },
-                // Admin removed
               ].map(({ href, label, icon, count }) => (
                 <li key={`menu-${label}`}>
                   <Link

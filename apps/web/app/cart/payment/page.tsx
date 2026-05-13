@@ -1,4 +1,5 @@
 // app/cart/payment/page.tsx
+// Back → /cart/address  (Header reads pathname and uses router.back() or fallback)
 "use client";
 
 import Header from "@/components/Header";
@@ -28,7 +29,7 @@ export default function PaymentPage() {
       total_amount: 1572,
       payment_method: "Razorpay",
       payment_status: "Paid",
-      orders_status: "Pending"
+      orders_status: "Pending",
     }]);
     if (error) { console.log(error); alert(error.message); return; }
     alert("Order Saved Successfully");
@@ -42,7 +43,7 @@ export default function PaymentPage() {
       name: "Fashion App",
       description: "Order Payment",
       handler: async function () { await saveOrder(); },
-      theme: { color: "#111111" }
+      theme: { color: "#111111" },
     };
     const paymentObject = new window.Razorpay(options);
     paymentObject.open();
@@ -50,25 +51,20 @@ export default function PaymentPage() {
 
   return (
     <>
-      {/* Back only — no menu, no search */}
-      <Header showBack backHref="/cart/address" />
+      {/* Header reads pathname="/cart/payment" → showBack=true, backFallback="/cart/address"
+          Clicking back: router.back() → lands on address page correctly */}
+      <Header />
 
       <main style={{ padding: "24px", maxWidth: "500px", margin: "0 auto" }}>
-        <h2>Select Payment Method</h2>
-        <div style={{ marginTop: "20px", display: "grid", gap: "12px" }}>
-          <button style={{
-            padding: "16px", borderRadius: "14px",
-            border: "1px solid #ddd", background: "#fff"
-          }}>
+        <h2 style={{ fontFamily: "var(--font-display)", marginBottom: 20 }}>
+          Select Payment Method
+        </h2>
+        <div style={{ display: "grid", gap: "12px" }}>
+          <button style={{ padding: "16px", borderRadius: "14px", border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontFamily: "var(--font-sans)", fontSize: 15 }}>
             Cash on Delivery
           </button>
-          <button
-            onClick={loadRazorpay}
-            style={{
-              padding: "16px", borderRadius: "14px",
-              border: "1px solid #ddd", background: "#fff", cursor: "pointer"
-            }}
-          >
+          <button onClick={loadRazorpay}
+            style={{ padding: "16px", borderRadius: "14px", border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontFamily: "var(--font-sans)", fontSize: 15 }}>
             Pay with Razorpay
           </button>
         </div>

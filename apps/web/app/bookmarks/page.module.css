@@ -1,15 +1,32 @@
+/* ── Page wrapper ── */
 .main {
   width: 100%;
-  min-height: calc(100vh - var(--header-height) - 64px);
-  padding-bottom: 80px; /* space for bottom bar */
+  min-height: calc(100vh - var(--header-height, 56px));
+  padding-bottom: 80px;
   background: var(--color-bg);
+  padding: 3px;
 }
 
-/* ── 3-column edge-to-edge grid ── */
+/* ── Responsive grid ── */
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* Mobile: 2 columns */
+  grid-template-columns: repeat(2, 1fr);
   gap: 0;
+}
+
+/* Desktop: 3 columns */
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Large desktop: 4 columns */
+@media (min-width: 1200px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 /* ── Card ── */
@@ -18,22 +35,32 @@
   cursor: pointer;
   background: var(--color-surface, #f5f5f5);
   transition: opacity 0.2s ease;
-  border: 2px solid transparent;
+  /* Subtle border between cards */
+  border: 1px solid var(--color-border, #e8e6e2);
+  border-top: none;
+  border-left: none;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
 }
 
-.card:hover { opacity: 0.93; }
+.card:hover {
+  opacity: 0.93;
+}
 
 .cardSelected {
-  border-color: #1a1a1a;
+  outline-color: #1a1a1a;
 }
 
-/* Image */
+/* ── Image — equal size via fixed aspect-ratio ── */
 .imgWrap {
   position: relative;
   width: 100%;
+  /* 3:4 portrait — same on every screen size */
   aspect-ratio: 3 / 4;
   overflow: hidden;
   background: #e8e6e2;
+  /* Prevent any flex/grid stretching */
+  flex-shrink: 0;
 }
 
 .img {
@@ -45,7 +72,9 @@
   transition: transform 0.45s ease;
 }
 
-.card:hover .img { transform: scale(1.03); }
+.card:hover .img {
+  transform: scale(1.03);
+}
 
 .imgPlaceholder {
   width: 100%;
@@ -53,39 +82,46 @@
   background: linear-gradient(145deg, #e8e6e2, #d4d0ca);
 }
 
-/* Bookmark icon */
+/* ── Bookmark remove button — top-right ── */
 .bookmarkBtn {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 8px;
+  right: 8px;
   z-index: 2;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255,255,255,0.18);
+  background: rgba(255, 255, 255, 0.22);
   border: none;
   border-radius: 50%;
   color: #2563eb;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .bookmarkBtn:hover {
-  background: rgba(255,255,255,0.35);
+  background: rgba(255, 255, 255, 0.4);
   transform: scale(1.1);
 }
 
-/* Selected tick overlay */
+@media (min-width: 768px) {
+  .bookmarkBtn {
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* ── Selected overlay ── */
 .selectedOverlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.32);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: rgba(0, 0, 0, 0.28);
   pointer-events: none;
   animation: fadeIn 0.18s ease;
 }
@@ -95,29 +131,43 @@
   to   { opacity: 1; }
 }
 
-/* ── Info bar below image ── */
+/* ── Info bar ── */
 .info {
-  padding: 10px 12px 14px;
+  padding: 8px 8px 10px;
   background: var(--color-bg);
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-border, #e8e6e2);
+}
+
+@media (min-width: 768px) {
+  .info {
+    padding: 10px 12px 14px;
+  }
 }
 
 .nameRow {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 4px;
+  gap: 4px;
+  margin-bottom: 3px;
 }
 
 .name {
   font-family: var(--font-sans);
-  font-size: 12px;
+  /* Smaller on mobile so it doesn't overflow */
+  font-size: 11px;
   font-weight: 500;
   color: var(--color-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0; /* allow flex shrink */
+}
+
+@media (min-width: 768px) {
+  .name {
+    font-size: 12px;
+  }
 }
 
 .size {
@@ -137,23 +187,39 @@
 .priceRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-wrap: nowrap;
 }
 
 .price {
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .price {
+    font-size: 13px;
+  }
 }
 
 .originalPrice {
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 10px;
   color: var(--color-text-tertiary);
   text-decoration: line-through;
+  white-space: nowrap;
 }
 
+@media (min-width: 768px) {
+  .originalPrice {
+    font-size: 12px;
+  }
+}
+
+/* ── Empty state ── */
 .empty {
   display: flex;
   flex-direction: column;
@@ -161,16 +227,39 @@
   justify-content: center;
   text-align: center;
   gap: 12px;
+  /* Fill the remaining viewport height */
+  min-height: calc(100vh - var(--header-height, 56px) - 80px);
+  padding: 40px 24px;
 }
 
-/* ── Select toggle button — top-left ── */
+.emptyIcon {
+  color: var(--color-text-tertiary, #aaa);
+  opacity: 0.6;
+}
+
+.emptyTitle {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.emptyText {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+/* ── Select button (top-left) ── */
 .selectBtn {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 8px;
+  left: 8px;
   z-index: 3;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -180,6 +269,7 @@
   color: #fff;
   cursor: pointer;
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   transition: background 0.18s, border-color 0.18s, transform 0.15s;
 }
 

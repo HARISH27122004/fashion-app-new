@@ -21,11 +21,41 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
   const quantity = getQuantity(product.id);
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"cart" | "bookmark">("cart");
 
   const hasDiscount =
     typeof product.discount_percent === "number" &&
     product.discount_percent > 0 &&
     product.original_price != null;
+
+  // ── Bookmark click ────────────────────────────────────────────
+  function handleBookmarkClick(e: React.MouseEvent) {
+    e.preventDefault();
+    if (bookmarked) {
+      // Already saved → remove immediately, no size needed
+      toggleBookmark(product.id);
+    } else {
+      // Not saved yet → ask for size first
+      setModalMode("bookmark");
+      setModalOpen(true);
+    }
+  }
+
+  // ── Add-to-cart click ─────────────────────────────────────────
+  function handleAddToCartClick() {
+    setModalMode("cart");
+    setModalOpen(true);
+  }
+
+  // ── Modal close callback ──────────────────────────────────────
+  // `sizeSelected` is true only when the user tapped a confirm button
+  // (not when they dismissed or pressed Escape).
+  function handleModalClose(sizeSelected?: boolean) {
+    setModalOpen(false);
+    if (modalMode === "bookmark" && sizeSelected) {
+      toggleBookmark(product.id);
+    }
+  }
 
   return (
     <>
@@ -50,7 +80,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
           {/* Bookmark — top right overlay */}
           <button
             className={`${styles.bookmarkOverlay}${bookmarked ? ` ${styles.bookmarked}` : ""}`}
-            onClick={(e) => { e.preventDefault(); toggleBookmark(product.id); }}
+            onClick={handleBookmarkClick}
             aria-label={bookmarked ? "Remove bookmark" : "Bookmark"}
           >
             <svg width="14" height="14" viewBox="0 0 24 24"
@@ -80,10 +110,9 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
 
             {/* Qty controls */}
             {quantity === 0 ? (
-              /* No items yet — single + opens size modal */
               <button
                 className={styles.addBtn}
-                onClick={() => setModalOpen(true)}
+                onClick={handleAddToCartClick}
                 aria-label={`Select size for ${product.name}`}
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
@@ -93,9 +122,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
                 </svg>
               </button>
             ) : (
-              /* Already in cart — show − qty + row */
               <div className={styles.qtyRow} role="group" aria-label="Quantity">
-                {/* Minus: remove one */}
                 <button
                   className={styles.qtyBtn}
                   onClick={() => removeFromCart(product.id)}
@@ -109,10 +136,9 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
 
                 <span className={styles.qtyCount}>{quantity}</span>
 
-                {/* Plus: add another (via size modal) */}
                 <button
                   className={styles.qtyBtn}
-                  onClick={() => setModalOpen(true)}
+                  onClick={handleAddToCartClick}
                   aria-label="Add one more"
                 >
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
@@ -127,10 +153,12 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
         </div>
       </article>
 
+      {/* Single modal instance — mode switches between "cart" and "bookmark" */}
       <SizePickerModal
         product={product}
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        mode={modalMode}
+        onClose={handleModalClose}
       />
     </>
   );

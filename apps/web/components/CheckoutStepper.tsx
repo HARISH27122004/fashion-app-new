@@ -1,9 +1,18 @@
 "use client";
 
-import { useCheckout } from "@/contexts/CheckoutContext";
+import {
+  useCheckout,
+  type CheckoutStep,
+} from "@/contexts/CheckoutContext";
 import styles from "./CheckoutStepper.module.css";
 
-export const CheckoutSteps: readonly CheckoutStep[] = ["cart", "address", "payment", "success", "tracking"];
+export const CheckoutSteps: CheckoutStep[] = [
+  "cart",
+  "address",
+  "payment",
+  "success",
+  "tracking",
+];
 
 export function CheckoutStepper() {
   const { step } = useCheckout();

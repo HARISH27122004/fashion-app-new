@@ -2,36 +2,25 @@
 .main {
   width: 100%;
   background: var(--color-bg);
+  padding: 0px 0px 0px 4px;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   HERO
+   HERO  — image-tag approach, zero black space, zero crop
 ══════════════════════════════════════════════════════════════ */
 .hero {
   position: relative;
   width: 100%;
-  height: calc(100vh - var(--header-height));
-  min-height: 480px;
-  max-height: 820px;
   overflow: hidden;
-  /* background: #1c1e22; */
-  border-radius: 50px 50px 0 0;
-
+  border-radius:32px 32px 0 0;
 }
 
+/* <img> tag — width 100%, height follows the image naturally */
 .heroBg {
-  position: absolute;
-  inset: 0;
-  background-image: url('/images/hero.jpg');
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
-  animation: heroPan 16s ease-in-out infinite alternate;
-}
-
-@keyframes heroPan {
-  from { transform: scale(1.00); }
-  to   { transform: scale(1.04); }
+  display: block;
+  width: 100%;
+  height: auto;        /* container grows exactly as tall as the image */
+  object-fit: fill;    /* no crop, no zoom, full image shown always */
 }
 
 .heroOverlay {
@@ -43,6 +32,7 @@
     rgba(0,0,0,0.04) 45%,
     rgba(0,0,0,0.52) 100%
   );
+  pointer-events: none;
 }
 
 .heroShopBtn {
@@ -133,12 +123,11 @@
 .productGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  padding: 0;
-  width:100%;
+  padding: 0px;
+  width: 100%;
   margin: 0;
   gap: 3px;
   border-radius: 3px;
-  padding: 4px;
 }
 
 .empty {
@@ -156,9 +145,6 @@
 
 /* ══════════════════════════════════════════════════════════════
    LUXURY IMAGE CAROUSEL
-   — Full-width section, 3-up coverflow: prev | ACTIVE | next
-   — No add-to-cart or save buttons. Image + minimal label only.
-   — Premium Apple/luxury fashion aesthetic.
 ══════════════════════════════════════════════════════════════ */
 .luxCarousel {
   width: 100%;
@@ -168,7 +154,6 @@
   position: relative;
 }
 
-/* Section header row */
 .luxCarouselTop {
   display: flex;
   align-items: flex-end;
@@ -197,12 +182,7 @@
   line-height: 1;
 }
 
-/* Arrow buttons */
-.luxArrows {
-  display: flex;
-  gap: 10px;
-  flex-shrink: 0;
-}
+.luxArrows { display: flex; gap: 10px; flex-shrink: 0; }
 
 .luxArrow {
   display: flex;
@@ -215,8 +195,7 @@
   background: transparent;
   color: var(--color-text-primary);
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease,
-              transform 0.15s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
 .luxArrow:hover {
   background: var(--color-text-primary);
@@ -226,7 +205,6 @@
 }
 .luxArrow:active { transform: scale(0.96); }
 
-/* ── Stage: 3-card coverflow ─────────────────────────────── */
 .luxStage {
   position: relative;
   width: 100%;
@@ -235,10 +213,8 @@
   align-items: center;
   justify-content: center;
   perspective: 1200px;
-  /* overflow visible so side cards peek */
 }
 
-/* Base slide */
 .luxSlide {
   position: absolute;
   transition:
@@ -249,25 +225,20 @@
   user-select: none;
 }
 
-/* Active — front and center, full size */
 .luxSlide__active {
   z-index: 3;
   transform: translateX(0) scale(1) rotateY(0deg);
   opacity: 1;
   cursor: default;
-  pointer-events: none; /* side cards handle click */
+  pointer-events: none;
   width: clamp(280px, 38vw, 520px);
 }
-
-/* Prev — left side, scaled down, rotated */
 .luxSlide__prev {
   z-index: 2;
   transform: translateX(-62%) scale(0.78) rotateY(12deg);
   opacity: 0.72;
   width: clamp(240px, 34vw, 460px);
 }
-
-/* Next — right side */
 .luxSlide__next {
   z-index: 2;
   transform: translateX(62%) scale(0.78) rotateY(-12deg);
@@ -275,22 +246,16 @@
   width: clamp(240px, 34vw, 460px);
 }
 
-/* Frame: rounded card with shadow */
 .luxSlideFrame {
   position: relative;
   width: 100%;
-  /* tall portrait ratio */
   aspect-ratio: 3 / 4;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow:
-    0 2px 8px rgba(0,0,0,0.06),
-    0 12px 40px rgba(0,0,0,0.14),
-    0 32px 64px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 12px 40px rgba(0,0,0,0.14), 0 32px 64px rgba(0,0,0,0.08);
   background: #e8e6e2;
 }
 
-/* Product image */
 .luxSlideImg {
   width: 100%;
   height: 100%;
@@ -299,18 +264,14 @@
   display: block;
   transition: transform 0.8s cubic-bezier(0.33, 1, 0.68, 1);
 }
-.luxSlide__active .luxSlideFrame:hover .luxSlideImg {
-  transform: scale(1.03);
-}
+.luxSlide__active .luxSlideFrame:hover .luxSlideImg { transform: scale(1.03); }
 
-/* Placeholder when no image */
 .luxSlidePlaceholder {
   width: 100%;
   height: 100%;
   background: linear-gradient(145deg, #e8e6e2 0%, #d4d0ca 100%);
 }
 
-/* Dim overlay on non-active slides */
 .luxSlideDim {
   position: absolute;
   inset: 0;
@@ -319,7 +280,6 @@
   border-radius: inherit;
 }
 
-/* Bottom-of-image label — active slide only */
 .luxSlideOverlay {
   position: absolute;
   left: 0; right: 0; bottom: 0;
@@ -340,7 +300,6 @@
   text-transform: uppercase;
   color: rgba(255,255,255,0.6);
 }
-
 .luxSlideName {
   font-family: var(--font-display);
   font-size: clamp(15px, 1.6vw, 20px);
@@ -349,7 +308,6 @@
   color: #fff;
   line-height: 1.2;
 }
-
 .luxSlidePrice {
   font-family: var(--font-sans);
   font-size: 13px;
@@ -358,7 +316,6 @@
   margin-top: 2px;
 }
 
-/* ── Bottom: dots + counter ──────────────────────────────── */
 .luxBottom {
   display: flex;
   align-items: center;
@@ -368,11 +325,7 @@
   padding: 0 32px;
 }
 
-.luxDots {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.luxDots { display: flex; align-items: center; gap: 8px; }
 
 .luxDot {
   width: 6px;
@@ -385,7 +338,6 @@
   transition: background 0.25s ease, width 0.3s ease, border-radius 0.3s ease;
   flex-shrink: 0;
 }
-
 .luxDotActive {
   width: 22px;
   border-radius: 3px;
@@ -402,11 +354,7 @@
   align-items: center;
   gap: 5px;
 }
-
-.luxCounterSep {
-  color: var(--color-text-tertiary);
-  font-weight: 300;
-}
+.luxCounterSep { color: var(--color-text-tertiary); font-weight: 300; }
 
 /* ══════════════════════════════════════════════════════════════
    FOOTER
@@ -438,7 +386,6 @@
   background: #f0eeeb;
   margin-bottom: 16px;
 }
-
 .storeThumb {
   width: 100%;
   height: 100%;
@@ -454,7 +401,6 @@
   color: var(--color-text-primary);
   margin-bottom: 4px;
 }
-
 .storeAddress {
   font-family: var(--font-sans);
   font-size: 12px;
@@ -462,7 +408,6 @@
   line-height: 1.65;
   margin-bottom: 12px;
 }
-
 .storeDir {
   display: inline-flex;
   align-items: center;
@@ -488,7 +433,6 @@
   margin: 0 auto;
   border-bottom: 1px solid var(--color-border);
 }
-
 .footerCol h4 {
   font-family: var(--font-sans);
   font-size: 10px;
@@ -498,14 +442,12 @@
   color: var(--color-text-primary);
   margin-bottom: 20px;
 }
-
 .footerCol ul {
   list-style: none;
   display: flex;
   flex-direction: column;
   gap: 11px;
 }
-
 .footerCol ul li a {
   font-family: var(--font-sans);
   font-size: 13px;
@@ -523,7 +465,6 @@
   max-width: var(--max-width);
   margin: 0 auto;
 }
-
 .footerCopy {
   font-family: var(--font-sans);
   font-size: 10px;
@@ -531,7 +472,6 @@
   text-transform: uppercase;
   color: var(--color-text-tertiary);
 }
-
 .footerBrand {
   font-family: var(--font-display);
   font-size: 20px;
@@ -549,7 +489,7 @@
 }
 
 @media (max-width: 900px) {
-  .productGrid { grid-template-columns: repeat(2, 1fr); padding: 4px; }
+  .productGrid { grid-template-columns: repeat(2, 1fr); padding: 0px; }
   .sectionHeader { padding: 28px 16px 14px; }
   .filterWrap { padding: 0 16px 8px; }
   .storeRow { grid-template-columns: 1fr; }
@@ -563,8 +503,7 @@
 }
 
 @media (max-width: 600px) {
-  .hero { max-height: 600px; }
-  .productGrid { padding: 4px; }
+  .productGrid { padding: 0px; }
   .luxCarousel { padding: 56px 0 48px; }
   .luxCarouselTop { padding: 0 16px 22px; }
   .luxStage { height: clamp(320px, 88vw, 460px); }

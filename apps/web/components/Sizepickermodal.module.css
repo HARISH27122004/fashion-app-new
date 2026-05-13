@@ -19,17 +19,15 @@
 
 /* ════════════════════════════════════════════════════════════
    SHEET — shared base
-   Hidden state uses visibility so the element stays in DOM
-   (required for CSS transitions to fire on open)
 ════════════════════════════════════════════════════════════ */
 .sheet {
   position: fixed;
   z-index: 301;
   background: #fff;
-  pointer-events: none;        /* not interactive when closed */
-  visibility: hidden;          /* screen-reader hidden when closed */
+  pointer-events: none;
+  visibility: hidden;
 
-  /* ── Mobile defaults (bottom sheet) ── */
+  /* Mobile: bottom sheet */
   bottom: 0;
   left: 0;
   right: 0;
@@ -38,41 +36,36 @@
   padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
 
   transform: translateY(100%);
-  opacity: 1;                  /* mobile animates via transform only */
+  opacity: 1;
   transition:
     transform  0.38s cubic-bezier(0.32, 0.72, 0, 1),
-    visibility 0s   linear 0.38s;   /* delay hides after close anim */
+    visibility 0s   linear 0.38s;
 
   box-shadow:
     0 -4px 32px rgba(0, 0, 0, 0.12),
     0 -1px 0   rgba(0, 0, 0, 0.06);
 }
 
-/* ── Mobile open ── */
 .sheetOpen {
   transform: translateY(0);
   pointer-events: auto;
   visibility: visible;
   transition:
     transform  0.38s cubic-bezier(0.32, 0.72, 0, 1),
-    visibility 0s   linear 0s;      /* show immediately on open */
+    visibility 0s   linear 0s;
 }
 
 /* ════════════════════════════════════════════════════════════
-   FLOATING CARD  (desktop ≥ 769 px)
-   Key fix: opacity transition lives HERE, not inside .sheetOpen
-   so the media-query specificity doesn't override it.
+   DESKTOP FLOATING CARD (≥ 769px)
 ════════════════════════════════════════════════════════════ */
 @media (min-width: 769px) {
   .sheet {
-    /* Detach from bottom strip */
     left: auto;
     right: 40px;
     bottom: 40px;
     width: 360px;
     border-radius: 18px;
 
-    /* Closed state on desktop: slide down + fade */
     transform: translateY(16px);
     opacity: 0;
     transition:
@@ -85,7 +78,6 @@
       0 2px 8px  rgba(0, 0, 0, 0.08);
   }
 
-  /* Desktop open — override BOTH transform AND opacity */
   .sheetOpen {
     transform: translateY(0);
     opacity: 1;
@@ -141,11 +133,11 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 22px;
+  margin-bottom: 16px;
 }
 
 @media (min-width: 769px) {
-  .header { padding-right: 32px; } /* clear the close button */
+  .header { padding-right: 32px; }
 }
 
 .productName {
@@ -205,6 +197,23 @@
   white-space: nowrap;
 }
 .sizeGuideBtn:hover { background: #ebebeb; }
+
+/* ── Mode pill (bookmark mode only) ── */
+.modePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #111;
+  background: #f4f4f4;
+  border: 1px solid #e4e4e4;
+  border-radius: 20px;
+  padding: 5px 12px 5px 9px;
+  margin-bottom: 16px;
+}
 
 /* ── Size label ── */
 .sizeLabel {
@@ -275,6 +284,7 @@
   gap: 10px;
 }
 
+/* Cart mode: ADD TO BAG */
 .addToCartBtn {
   flex: 1;
   height: 50px;
@@ -290,10 +300,10 @@
   cursor: pointer;
   transition: background 0.18s ease, transform 0.12s ease;
 }
-
 .addToCartBtn:hover  { background: #f4f4f4; }
 .addToCartBtn:active { transform: scale(0.97); }
 
+/* Cart mode: BUY NOW */
 .buyNowBtn {
   flex: 1;
   height: 50px;
@@ -309,6 +319,28 @@
   cursor: pointer;
   transition: background 0.18s ease, transform 0.12s ease;
 }
-
 .buyNowBtn:hover  { background: #333; }
 .buyNowBtn:active { transform: scale(0.97); }
+
+/* Bookmark mode: SAVE TO WISHLIST (full width, filled) */
+.wishlistBtn {
+  flex: 1;
+  height: 50px;
+  border-radius: 10px;
+  border: none;
+  background: #111;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.18s ease, transform 0.12s ease;
+}
+.wishlistBtn:hover  { background: #333; }
+.wishlistBtn:active { transform: scale(0.97); }

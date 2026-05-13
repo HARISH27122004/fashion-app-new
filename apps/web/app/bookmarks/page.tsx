@@ -47,7 +47,13 @@ export default function BookmarksPage() {
 
   return (
     <>
-      <Header showMenu showSearch />
+      {/*
+        No props needed — getRouteConfig("/bookmarks") auto-configures:
+          showMenu: true, showSearch: true, showBack: true, title: "SAVED"
+        Back button uses router.back() → goes to wherever user came from.
+        If no history, falls back to "/".
+      */}
+      <Header />
 
       <main className={styles.main}>
         {filteredProducts.length > 0 ? (
@@ -64,7 +70,7 @@ export default function BookmarksPage() {
                 >
                   {/* Image */}
                   <div className={styles.imgWrap}>
-                    {product.image || product.image ? (
+                    {product.image ? (
                       <img
                         src={product.image}
                         alt={product.name}
@@ -74,8 +80,6 @@ export default function BookmarksPage() {
                     ) : (
                       <div className={styles.imgPlaceholder} />
                     )}
-
-
 
                     {/* Bookmark remove — top-right */}
                     <button
@@ -92,8 +96,8 @@ export default function BookmarksPage() {
                       aria-label="Remove bookmark"
                     >
                       <svg
-                        width="20"
-                        height="20"
+                        width="18"
+                        height="18"
                         viewBox="0 0 24 24"
                         fill="currentColor"
                         stroke="currentColor"
@@ -117,7 +121,7 @@ export default function BookmarksPage() {
                       <span className={styles.name}>{product.name}</span>
                       {product.sizes && (
                         <span className={styles.size}>
-                          Selected Size &nbsp;<strong>{product.sizes}</strong>
+                          <strong>{product.sizes}</strong>
                         </span>
                       )}
                     </div>
@@ -138,22 +142,20 @@ export default function BookmarksPage() {
           </section>
         ) : (
           <div className={styles.empty}>
-            <div>
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
+            <div className={styles.emptyIcon}>
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" strokeWidth="1.5"
                 strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
               </svg>
             </div>
-            <div><h2>No bookmarks yet</h2></div>
-            <div>
-              <p>{searchQuery ? `No results for "${searchQuery}"` : "Items you save will appear here"}</p>
-            </div>
+            <h2 className={styles.emptyTitle}>No bookmarks yet</h2>
+            <p className={styles.emptyText}>
+              {searchQuery ? `No results for "${searchQuery}"` : "Items you save will appear here"}
+            </p>
           </div>
         )}
       </main>
-
-
     </>
   );
 }

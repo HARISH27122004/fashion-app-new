@@ -27,7 +27,11 @@ export default function NotificationsPage() {
   if (!mounted) {
     return (
       <>
-        <Header showMenu showSearch />
+        {/*
+          No props needed — getRouteConfig("/notification") auto-configures:
+            showMenu: true, showSearch: true, showBack: true, title: "NOTIFICATIONS"
+        */}
+        <Header />
         <main className={styles.main}>
           <div className={styles.emptyState}>
             <div className={styles.loadingWrap}>
@@ -43,7 +47,12 @@ export default function NotificationsPage() {
 
   return (
     <>
-      <Header showMenu showSearch />
+      {/*
+        No props — route config handles everything:
+          showMenu: true, showSearch: true, showBack: true, title: "NOTIFICATIONS"
+        Back → router.back() → previous page, fallback to "/"
+      */}
+      <Header />
 
       <main className={styles.main}>
         <div className={styles.header}>
@@ -117,7 +126,7 @@ export default function NotificationsPage() {
                 <button
                   className={styles.deleteBtn}
                   onClick={(e) => {
-                    e.stopPropagation(); // prevent triggering the li click
+                    e.stopPropagation();
                     removeNotification(notif.id);
                   }}
                   aria-label="Remove notification"

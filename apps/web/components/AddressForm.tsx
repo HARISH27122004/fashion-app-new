@@ -24,18 +24,14 @@ export function AddressForm() {
     country: v => v.trim().length > 0 ? null : 'Country is required',
   };
 
-  const handleChange = useCallback((field: keyof typeof shippingAddress, value: string) => {
-    setShippingAddress(prev => ({ ...prev, [field]: value }));
-    const validator = validators[field];
-    if (validator) {
-      const error = validator(value);
-      setFormErrors(prev => {
-        const next = { ...prev };
-        if (error) next[field] = error; else delete next[field];
-        return next;
-      });
-      setValidFields(prev => ({ ...prev, [field]: !error }));
-    }
+const handleChange = useCallback((field: keyof typeof shippingAddress, value: string) => {
+    setShippingAddress(({[field]: value }));
+    // Clear error for this field when user starts typing
+    setFormErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
   }, [setShippingAddress]);
 
   const handleBlur = useCallback((field: keyof typeof shippingAddress) => {

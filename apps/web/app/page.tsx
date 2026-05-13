@@ -60,10 +60,7 @@ export default function Home() {
   const { searchQuery, clearSearch } = useSearch();
   const notifications = useNotifications();
 
-  // ── Fetch products ───────────────────────────────────────────
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  useEffect(() => { fetchProducts(); }, []);
 
   async function fetchProducts() {
     const { data, error } = await supabase.from("products").select("*");
@@ -71,57 +68,50 @@ export default function Home() {
     if (data) setProducts(data.map((item) => ({ ...item, id: String(item.id) })));
   }
 
-  // ── Notifications ────────────────────────────────────────────
-useEffect(() => {
-  if (notifications.length === 0) return;
-  if (!hasInitialized.current) {
-    hasInitialized.current = true;
-    const dismissed = getDismissedIds();
-    const toShow = notifications.filter((n) => !dismissed.has(n.id));
-    if (toShow.length > 0)
-      setActiveToasts(
-        toShow.map((n) => ({ id: n.id, message: n.message, product_id: n.product_id }))
-      );
-    return;
-  }
-  setActiveToasts((prev) => {
-    const dismissed = getDismissedIds();
-    const existingIds = new Set(prev.map((t) => t.id));
-    const brandNew = notifications
-      .filter((n) => !dismissed.has(n.id) && !existingIds.has(n.id))
-      .map((n) => ({ id: n.id, message: n.message, product_id: n.product_id }));
-    return brandNew.length > 0 ? [...brandNew, ...prev] : prev;
-  });
-}, [notifications]);
+  useEffect(() => {
+    if (notifications.length === 0) return;
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      const dismissed = getDismissedIds();
+      const toShow = notifications.filter((n) => !dismissed.has(n.id));
+      if (toShow.length > 0)
+        setActiveToasts(toShow.map((n) => ({ id: n.id, message: n.message, product_id: n.product_id })));
+      return;
+    }
+    setActiveToasts((prev) => {
+      const dismissed = getDismissedIds();
+      const existingIds = new Set(prev.map((t) => t.id));
+      const brandNew = notifications
+        .filter((n) => !dismissed.has(n.id) && !existingIds.has(n.id))
+        .map((n) => ({ id: n.id, message: n.message, product_id: n.product_id }));
+      return brandNew.length > 0 ? [...brandNew, ...prev] : prev;
+    });
+  }, [notifications]);
 
   function handleDismiss(id: string) {
     markDismissed(id);
     setActiveToasts((prev) => prev.filter((t) => t.id !== id));
   }
 
-  // ── Category / search filter ─────────────────────────────────
   function handleCategorySelect(value: string) {
     setSelectedCategory(value);
     if (value === "all") clearSearch();
   }
 
   const filteredProducts = products.filter((p) => {
-    const matchesCategory =
-      selectedCategory === "all" ? true : p.category === selectedCategory;
+    const matchesCategory = selectedCategory === "all" ? true : p.category === selectedCategory;
     const q = searchQuery.trim().toLowerCase();
     const matchesSearch =
       q === ""
         ? true
         : p.name?.toLowerCase().includes(q) ||
-        p.category?.toLowerCase().includes(q) ||
-        String(p.price).includes(q);
+          p.category?.toLowerCase().includes(q) ||
+          String(p.price).includes(q);
     return matchesCategory && matchesSearch;
   });
 
-  // ── Carousel logic ───────────────────────────────────────────
   const total = products.length;
 
-  // Core go-to: wraps index, guards against rapid clicks
   const goTo = useCallback(
     (index: number) => {
       if (isTransitioning || total === 0) return;
@@ -135,16 +125,12 @@ useEffect(() => {
   const next = useCallback(() => goTo(activeSlide + 1), [activeSlide, goTo]);
   const prev = useCallback(() => goTo(activeSlide - 1), [activeSlide, goTo]);
 
-  // Auto-play
   useEffect(() => {
     if (total === 0) return;
     intervalRef.current = setInterval(next, 4200);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [next, total]);
 
-  // Reset timer then navigate — defined as useCallback so it's stable
   const resetAndGoTo = useCallback(
     (fn: () => void) => {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -154,29 +140,22 @@ useEffect(() => {
     [next]
   );
 
-  // Touch swipe handlers
-  const handleTouchStart = useCallback(
-    (e: React.TouchEvent<HTMLDivElement>) => {
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     const touch = e.touches[0];
     if (!touch) return;
-
     touchStartX.current = touch.clientX;
-    },
-    []
-  );
+  }, []);
 
   const handleTouchEnd = useCallback(
     (e: React.TouchEvent<HTMLDivElement>) => {
       const touch = e.changedTouches[0];
       if (!touch) return;
-
       const d = touchStartX.current - touch.clientX;
       if (Math.abs(d) > 40) resetAndGoTo(d > 0 ? next : prev);
     },
     [resetAndGoTo, next, prev]
   );
 
-  // Which role does slide i play?
   const getSlideRole = useCallback(
     (i: number): "active" | "prev" | "next" | "hidden" => {
       if (total === 0) return "hidden";
@@ -197,12 +176,17 @@ useEffect(() => {
 
         {/* ══ 1. HERO ══ */}
         <section className={styles.hero}>
-          <div
+          {/*
+            Use <img> instead of a CSS background-image div.
+            width="100%" + height="auto" means the container is
+            always exactly as tall as the image — no fixed height,
+            no letterbox, no black space, no crop, on any screen size.
+          */}
+          <img
+            src="https://images.pexels.com/photos/9775889/pexels-photo-9775889.jpeg"
+            alt="Hero"
             className={styles.heroBg}
-            style={{
-              backgroundImage:
-                "url('https://images.pexels.com/photos/9775889/pexels-photo-9775889.jpeg')",
-            }}
+            draggable={false}
           />
           <div className={styles.heroOverlay} />
           <a href="#product-grid" className={styles.heroShopBtn}>
@@ -210,31 +194,21 @@ useEffect(() => {
           </a>
         </section>
 
-        {/* ══ 2. CATEGORY FILTER ══ */}
-
-
-        {/* ══ 3. SECTION HEADER ══ */}
+        {/* ══ 2. SECTION HEADER ══ */}
         <div className={styles.sectionHeader} id="product-grid">
           <h2 className={styles.sectionTitle}>Latest drop</h2>
           <button className={styles.sectionMore}>Discover more</button>
         </div>
 
-        {/* ══ 4. PRODUCT GRID ══ */}
+        {/* ══ 3. PRODUCT GRID ══ */}
         <section className={styles.productGrid}>
           {filteredProducts.map((product, index) => (
             <ProductCard key={product.id} product={product} index={index} />
           ))}
           {filteredProducts.length === 0 && (
             <div className={styles.empty}>
-              <svg
-                width="44"
-                height="44"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.3"
-                strokeLinecap="round"
-              >
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
                 <circle cx="10.5" cy="10.5" r="6.5" />
                 <line x1="16" y1="16" x2="21" y2="21" />
               </svg>
@@ -247,61 +221,29 @@ useEffect(() => {
           )}
         </section>
 
-        {/* ══ 5. PREMIUM IMAGE-ONLY CAROUSEL ══ */}
+        {/* ══ 4. LUXURY CAROUSEL ══ */}
         {products.length > 0 && (
           <section className={styles.luxCarousel}>
-            {/* Header */}
             <div className={styles.luxCarouselTop}>
               <div>
                 <p className={styles.luxEyebrow}>curated for you</p>
                 <h2 className={styles.luxTitle}>You May Also Like</h2>
               </div>
               <div className={styles.luxArrows}>
-                <button
-                  className={styles.luxArrow}
-                  onClick={() => resetAndGoTo(prev)}
-                  aria-label="Previous"
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
+                <button className={styles.luxArrow} onClick={() => resetAndGoTo(prev)} aria-label="Previous">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="15 18 9 12 15 6" />
                   </svg>
                 </button>
-                <button
-                  className={styles.luxArrow}
-                  onClick={() => resetAndGoTo(next)}
-                  aria-label="Next"
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
+                <button className={styles.luxArrow} onClick={() => resetAndGoTo(next)} aria-label="Next">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
                 </button>
               </div>
             </div>
 
-            {/* Stage */}
-            <div
-              className={styles.luxStage}
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-            >
+            <div className={styles.luxStage} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
               {products.map((product, i) => {
                 const role = getSlideRole(i);
                 if (role === "hidden") return null;
@@ -313,9 +255,7 @@ useEffect(() => {
                       if (role === "next") resetAndGoTo(next);
                       if (role === "prev") resetAndGoTo(prev);
                     }}
-                    aria-label={
-                      role !== "active" ? `Go to ${product.name}` : undefined
-                    }
+                    aria-label={role !== "active" ? `Go to ${product.name}` : undefined}
                   >
                     <div className={styles.luxSlideFrame}>
                       {product.image_url || product.image ? (
@@ -330,32 +270,24 @@ useEffect(() => {
                       )}
                       {role === "active" && (
                         <div className={styles.luxSlideOverlay}>
-                          <p className={styles.luxSlideCategory}>
-                            {product.category}
-                          </p>
+                          <p className={styles.luxSlideCategory}>{product.category}</p>
                           <p className={styles.luxSlideName}>{product.name}</p>
-                          <p className={styles.luxSlidePrice}>
-                            ₹{Number(product.price).toLocaleString("en-IN")}
-                          </p>
+                          <p className={styles.luxSlidePrice}>₹{Number(product.price).toLocaleString("en-IN")}</p>
                         </div>
                       )}
-                      {role !== "active" && (
-                        <div className={styles.luxSlideDim} />
-                      )}
+                      {role !== "active" && <div className={styles.luxSlideDim} />}
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Dots + counter */}
             <div className={styles.luxBottom}>
               <div className={styles.luxDots}>
                 {products.map((_, i) => (
                   <button
                     key={i}
-                    className={`${styles.luxDot} ${i === activeSlide ? styles.luxDotActive : ""
-                      }`}
+                    className={`${styles.luxDot} ${i === activeSlide ? styles.luxDotActive : ""}`}
                     onClick={() => resetAndGoTo(() => goTo(i))}
                     aria-label={`Slide ${i + 1}`}
                   />
@@ -370,7 +302,7 @@ useEffect(() => {
           </section>
         )}
 
-        {/* ══ 6. FOOTER ══ */}
+        {/* ══ 5. FOOTER ══ */}
         <footer className={styles.footer}>
           <div className={styles.storeRow}>
             {STORES.map((store) => (
@@ -380,19 +312,12 @@ useEffect(() => {
                     src="/images/store-placeholder.jpg"
                     alt={`${store.city} store`}
                     className={styles.storeThumb}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                   />
                 </div>
                 <p className={styles.storeCity}>{store.city}</p>
                 <p className={styles.storeAddress}>{store.address}</p>
-                <a
-                  href={store.mapHref}
-                  className={styles.storeDir}
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                <a href={store.mapHref} className={styles.storeDir} target="_blank" rel="noreferrer">
                   Get Direction ↗
                 </a>
               </div>
@@ -446,8 +371,7 @@ useEffect(() => {
 
           <div className={styles.footerBottom}>
             <span className={styles.footerCopy}>
-              © {new Date().getFullYear()} WELCOME RETAIL PRIVATE LIMITED. ALL
-              RIGHTS RESERVED
+              © {new Date().getFullYear()} WELCOME RETAIL PRIVATE LIMITED. ALL RIGHTS RESERVED
             </span>
             <span className={styles.footerBrand}>WELCOME</span>
           </div>
