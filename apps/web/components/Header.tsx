@@ -19,17 +19,10 @@ type RouteConfig = {
   backFallback?: string;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Route → config mapping.
-// showBack=true  → back button replaces left-side nav (all non-home pages).
-// showMenu=true  → hamburger + nav links shown instead.
-// The Home page (/) is the only one that gets showMenu without showBack.
-// ─────────────────────────────────────────────────────────────────────────────
 function getRouteConfig(pathname: string): RouteConfig {
   if (pathname === "/")
     return { showMenu: true, showSearch: true };
 
-  // ── Main nav pages (still show menu icons on desktop, back on mobile) ──
   if (pathname === "/bookmarks")
     return { showMenu: true, showSearch: true, showBack: true, title: "SAVED",         backFallback: "/" };
   if (pathname === "/cart")
@@ -39,7 +32,6 @@ function getRouteConfig(pathname: string): RouteConfig {
   if (pathname === "/orders")
     return { showMenu: true, showSearch: true, showBack: true, title: "ORDERS",        backFallback: "/" };
 
-  // ── Deep / checkout pages ──
   if (pathname === "/login")
     return { showBack: true, title: "SIGN IN",  backFallback: "/" };
   if (pathname.startsWith("/product/"))
@@ -49,36 +41,25 @@ function getRouteConfig(pathname: string): RouteConfig {
   if (pathname === "/cart/payment")
     return { showBack: true, title: "PAYMENT",  backFallback: "/cart/address" };
 
-  // ── Fallback: any unknown route gets a back button ──
   return { showBack: true, backFallback: "/" };
 }
 
 interface HeaderProps {
-  /** Override: force show/hide the hamburger menu */
   showMenu?: boolean;
-  /** Override: force show/hide the search icon */
   showSearch?: boolean;
-  /** Override: force show/hide the back button */
   showBack?: boolean;
-  /** Override: page title shown in the center */
   title?: string;
-  /**
-   * Hard URL override — if set the back button always pushes this exact URL
-   * instead of using router.back() / the route-config fallback.
-   */
   backHref?: string;
 }
 
-// Desktop left nav links
 const NAV_LINKS = [
   { href: "/",          label: "New in" },
   { href: "/bookmarks", label: "Saved"  },
 ];
 
-// Desktop right icon buttons
 const NAV_ICONS = [
   {
-    href: "/notification", label: "Notifications", showNotif: true,
+    href: "/notification", label: "Notifications", showCart: false, showNotif: true,
     icon: (
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
@@ -86,7 +67,7 @@ const NAV_ICONS = [
     ),
   },
   {
-    href: "/bookmarks", label: "Saved",
+    href: "/bookmarks", label: "Saved", showCart: false, showNotif: false,
     icon: (
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
@@ -94,7 +75,7 @@ const NAV_ICONS = [
     ),
   },
   {
-    href: "/cart", label: "Bag", showCart: true,
+    href: "/cart", label: "Bag", showCart: true, showNotif: false,
     icon: (
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
@@ -102,7 +83,7 @@ const NAV_ICONS = [
     ),
   },
   {
-    href: "/orders", label: "Orders",
+    href: "/orders", label: "Orders", showCart: false, showNotif: false,
     icon: (
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
@@ -110,7 +91,7 @@ const NAV_ICONS = [
     ),
   },
   {
-    href: "/", label: "HOME",
+    href: "/", label: "HOME", showCart: false, showNotif: false,
     icon: (
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
@@ -119,16 +100,20 @@ const NAV_ICONS = [
   },
 ];
 
-// Mobile bottom glassmorphism pill — cart, account, notification, search
+// ─────────────────────────────────────────────────────────────
+// Mobile pill — Cart replaced with Home.
+// Badge: only "notification" shows notifCount. No showCart here.
+// ─────────────────────────────────────────────────────────────
 const MOBILE_PILL_ITEMS = [
   {
-    key: "cart",
-    label: "Bag",
-    href: "/cart",
-    showCart: true,
+    key: "home",
+    label: "Home",
+    href: "/",
+    showNotif: false,
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
       </svg>
     ),
   },
@@ -136,6 +121,7 @@ const MOBILE_PILL_ITEMS = [
     key: "account",
     label: "Account",
     href: "/login",
+    showNotif: false,
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
@@ -157,6 +143,7 @@ const MOBILE_PILL_ITEMS = [
     key: "search",
     label: "Search",
     href: null,
+    showNotif: false,
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="10.5" cy="10.5" r="6.5"/><line x1="16" y1="16" x2="21" y2="21"/>
@@ -182,7 +169,6 @@ export default function Header(props: HeaderProps) {
   const cartCount  = cartItems.reduce((sum, i) => sum + i.quantity, 0);
   const notifCount = notifications.length;
 
-  // Hide pill on scroll-down, reveal on scroll-up
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY;
@@ -209,7 +195,6 @@ export default function Header(props: HeaderProps) {
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
-  // ── Resolve config: props override auto-detected route config ──────────────
   const auto         = getRouteConfig(pathname);
   const showMenu     = props.showMenu   ?? auto.showMenu   ?? false;
   const showSearch   = props.showSearch ?? auto.showSearch ?? false;
@@ -218,25 +203,15 @@ export default function Header(props: HeaderProps) {
   const backFallback = auto.backFallback ?? "/";
   const isHome       = pathname === "/";
 
-  // ── Smart back navigation ──────────────────────────────────────────────────
-  // Priority:
-  //   1. props.backHref  → hard URL override from caller
-  //   2. window.history.length > 1 → real browser history → router.back()
-  //   3. route-config backFallback → safe landing page for direct URL visits
   function handleBack() {
-    if (props.backHref) {
-      router.push(props.backHref);
-      return;
-    }
+    if (props.backHref) { router.push(props.backHref); return; }
     if (typeof window !== "undefined" && window.history.length > 1) {
       router.back();
     } else {
       router.push(backFallback);
     }
   }
-  // ──────────────────────────────────────────────────────────────────────────
 
-  // ── Back button JSX (reused in both desktop + mobile headers) ─────────────
   const BackButton = ({ mobile = false }: { mobile?: boolean }) => (
     <button
       className={mobile ? styles.mobileBackBtn : styles.backBtn}
@@ -258,18 +233,16 @@ export default function Header(props: HeaderProps) {
       {!mobile && <span>Back</span>}
     </button>
   );
-  // ──────────────────────────────────────────────────────────────────────────
 
   return (
     <>
       {/* ═══════════════════════════════════════════════════════
-          DESKTOP HEADER — hidden on ≤768px
+          DESKTOP HEADER
       ═══════════════════════════════════════════════════════ */}
       <header
         className={`${styles.header} ${headerVisible ? styles.headerVisible : styles.headerHidden}`}
       >
         <div className={styles.inner}>
-          {/* LEFT */}
           <div className={styles.navLeft}>
             {showBack ? (
               <BackButton />
@@ -303,13 +276,11 @@ export default function Header(props: HeaderProps) {
             )}
           </div>
 
-          {/* CENTER */}
           {isHome
             ? <Link href="/" className={styles.brand}>𝕱𝖆𝖘𝖍𝖎𝖔𝖓𝕯𝖎𝖗𝖙</Link>
             : <span className={styles.pageTitle}>{pageTitle}</span>
           }
 
-          {/* RIGHT */}
           <div className={styles.navRight}>
             {showSearch && (
               <button
@@ -341,11 +312,10 @@ export default function Header(props: HeaderProps) {
       </header>
 
       {/* ═══════════════════════════════════════════════════════
-          MOBILE TOP BAR — shown only on ≤768px
+          MOBILE TOP BAR
       ═══════════════════════════════════════════════════════ */}
       <header className={styles.mobileHeader}>
         <div className={styles.mobileInner}>
-          {/* Left: hamburger OR back button — back takes priority on ALL non-home pages */}
           {showBack ? (
             <BackButton mobile />
           ) : (
@@ -363,13 +333,11 @@ export default function Header(props: HeaderProps) {
             </button>
           )}
 
-          {/* Center: brand on home, page title everywhere else */}
           {isHome
             ? <Link href="/" className={styles.mobileBrand}>𝕱𝖆𝖘𝖍𝖎𝖔𝖓𝕯𝖎𝖗𝖙</Link>
             : <span className={styles.mobilePageTitle}>{pageTitle}</span>
           }
 
-          {/* Right: bookmark shortcut */}
           <Link href="/bookmarks" className={styles.mobileIconBtn} aria-label="Saved">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -380,18 +348,21 @@ export default function Header(props: HeaderProps) {
       </header>
 
       {/* ═══════════════════════════════════════════════════════
-          MOBILE BOTTOM GLASSMORPHISM PILL BAR
+          MOBILE BOTTOM PILL BAR
       ═══════════════════════════════════════════════════════ */}
       <div
         className={`${styles.mobilePillWrap} ${pillVisible ? styles.pillWrapVisible : styles.pillWrapHidden}`}
       >
         <nav className={styles.mobilePill} aria-label="Main navigation">
-          {MOBILE_PILL_ITEMS.map(({ key, label, href, icon, showCart, showNotif }) => {
-            const count = (showCart ? cartCount : 0) + ((showNotif as any) ? notifCount : 0);
+          {MOBILE_PILL_ITEMS.map(({ key, label, href, icon, showNotif }) => {
+            // Only the notification pill shows a badge count
+            const count = showNotif ? notifCount : 0;
+
             const isActive = href
               ? (href === "/" ? pathname === "/" : pathname.startsWith(href))
               : false;
 
+            // Search — no href, opens drawer
             if (key === "search") {
               return (
                 <button
