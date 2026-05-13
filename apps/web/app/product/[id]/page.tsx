@@ -8,15 +8,17 @@ import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 import { useBookmarks } from "@/contexts/BookmarkContext";
 import { useCart } from "@/contexts/CartContext";
+import SizePickerModal from "@/components/Sizepickermodal";
 import styles from "./page.module.css";
 
 export default function ProductDetail() {
   const params = useParams();
   const [product, setProduct] = useState<any>(null);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"cart" | "bookmark">("cart");
 
   const { isBookmarked, toggleBookmark } = useBookmarks();
-  const { addToCart, removeFromCart, getQuantity } = useCart();
+  const { removeFromCart, getQuantity } = useCart();
 
   useEffect(() => { fetchProduct(); }, []);
 
@@ -27,13 +29,12 @@ export default function ProductDetail() {
       .eq("id", params.id)
       .single();
     if (error) { console.log(error); return; }
-    if (data) setProduct({ ...data, id: String(data.id), sizes: ["S", "M", "L", "XL"] });
+    if (data) setProduct({ ...data, id: String(data.id) });
   }
 
   if (!product) {
     return (
       <>
-        {/* No backHref — Header uses router.back() automatically */}
         <Header />
         <div className={styles.notFound}><p>Loading...</p></div>
       </>
@@ -44,11 +45,17 @@ export default function ProductDetail() {
   const quantity    = getQuantity(product.id);
   const hasDiscount = product.discount_percent != null && product.discount_percent > 0;
 
+  function openCartModal() {
+    setModalMode("cart");
+    setModalOpen(true);
+  }
+
+  function handleModalClose(sizeSelected?: boolean) {
+    setModalOpen(false);
+  }
+
   return (
     <>
-      {/* No backHref — Header reads the route (/product/[id]) and
-          calls router.back() so the user always returns to wherever
-          they came from (home, bookmarks, search, etc.) */}
       <Header />
 
       <main className={styles.main}>
@@ -84,19 +91,6 @@ export default function ProductDetail() {
             </div>
           )}
 
-          <div className={styles.sizesSection}>
-            <h3 className={styles.sectionLabel}>Sizes</h3>
-            <div className={styles.sizeGrid}>
-              {product.sizes.map((size: string) => (
-                <button key={size}
-                  className={`${styles.sizeBtn} ${selectedSize === size ? styles.sizeActive : ""}`}
-                  onClick={() => setSelectedSize(size)}>
-                  {size}
-                </button>
-              ))}
-            </div>
-          </div>
-
           <div className={styles.descriptionSection}>
             <h3 className={styles.sectionLabel}>Description</h3>
             <p className={styles.description}>{product.description}</p>
@@ -106,9 +100,8 @@ export default function ProductDetail() {
 
       {/* Bottom action bar */}
       <div className={styles.bottomBar}>
-        <button className={styles.buyNowWrap}>
+        <button className={styles.buyNowWrap} onClick={openCartModal}>
           <span className={styles.buyNowText}>Buy Now</span>
-          <span className={styles.tryNowTag}>Try now</span>
         </button>
 
         <div className={styles.bottomRight}>
@@ -130,12 +123,14 @@ export default function ProductDetail() {
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 </button>
                 <span className={styles.qtyCount}>{quantity}</span>
-                <button className={`${styles.qtyBtn} ${styles.qtyBtnFilled}`} onClick={() => addToCart(product.id)} aria-label="Add one">
+                {/* + opens the size picker */}
+                <button className={`${styles.qtyBtn} ${styles.qtyBtnFilled}`} onClick={openCartModal} aria-label="Add one">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 </button>
               </>
             ) : (
-              <button className={`${styles.qtyBtn} ${styles.qtyBtnFilled}`} onClick={() => addToCart(product.id)} aria-label="Add to cart">
+              /* + opens the size picker */
+              <button className={`${styles.qtyBtn} ${styles.qtyBtnFilled}`} onClick={openCartModal} aria-label="Add to cart">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               </button>
             )}
@@ -153,6 +148,14 @@ export default function ProductDetail() {
           </button>
         </div>
       </div>
+
+      {/* Size picker modal */}
+      <SizePickerModal
+        product={product}
+        open={modalOpen}
+        mode={modalMode}
+        onClose={handleModalClose}
+      />
     </>
   );
 }
