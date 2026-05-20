@@ -1,82 +1,392 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
+
+import { supabase } from "@/lib/supabase";
 
 type Bookmark = {
   productId: string;
-  timestamp: number;
 };
 
 type BookmarkContextType = {
   bookmarks: Bookmark[];
-  addBookmark: (productId: string) => void;
-  removeBookmark: (productId: string) => void;
-  isBookmarked: (productId: string) => boolean;
-  toggleBookmark: (productId: string) => void;
+
+  addBookmark: (
+    productId: string
+  ) => Promise<void>;
+
+  removeBookmark: (
+    productId: string
+  ) => Promise<void>;
+
+  isBookmarked: (
+    productId: string
+  ) => boolean;
+
+  toggleBookmark: (
+    productId: string
+  ) => Promise<void>;
 };
 
-const BookmarkContext = createContext<BookmarkContextType | undefined>(undefined);
+const BookmarkContext =
+  createContext<
+    BookmarkContextType | undefined
+  >(undefined);
 
-const STORAGE_KEY = 'welcome-fashion-bookmarks';
+export function BookmarkProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const [bookmarks, setBookmarks] =
+    useState<Bookmark[]>([]);
 
-export function BookmarkProvider({ children }: { children: ReactNode }) {
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  // Load bookmarks from localStorage on mount
+  // ───────────────────────────────────
+  // LOAD BOOKMARKS
+  // ───────────────────────────────────
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setBookmarks(Array.isArray(parsed) ? parsed : []);
-      }
-    } catch (error) {
-      console.error('Failed to load bookmarks:', error);
-    } finally {
-      setIsHydrated(true);
+    let mounted = true;
+
+    async function init() {
+      if (!mounted) return;
+
+      await loadBookmarks();
     }
+
+    init();
+
+    const {
+      data: { subscription },
+    } =
+      supabase.auth.onAuthStateChange(
+        async (event) => {
+          // SIGNED OUT
+          if (
+            event === "SIGNED_OUT"
+          ) {
+            await loadBookmarks();
+          }
+
+          // SIGNED IN
+          if (event === "SIGNED_IN") {
+            const {
+              data: { user },
+            } = await supabase.auth.getUser();
+
+            if (user) {
+              // ───────────────────────────────
+              // MERGE GUEST BOOKMARKS
+              // ───────────────────────────────
+              const guestBookmarks =
+                localStorage.getItem(
+                  "guest-bookmarks"
+                );
+
+              if (guestBookmarks) {
+                const parsedBookmarks =
+                  JSON.parse(
+                    guestBookmarks
+                  );
+
+                // EXISTING USER BOOKMARKS
+                const {
+                  data: existingBookmarks,
+                } = await supabase
+                  .from("bookmarks")
+                  .select("product_id")
+                  .eq("user_id", user.id);
+
+                const existingIds =
+                  new Set(
+                    existingBookmarks?.map(
+                      (item) =>
+                        item.product_id
+                    ) || []
+                  );
+
+                // FILTER NEW
+                const bookmarksToInsert =
+                  parsedBookmarks
+                    .filter(
+                      (
+                        item: Bookmark
+                      ) =>
+                        !existingIds.has(
+                          item.productId
+                        )
+                    )
+                    .map(
+                      (
+                        item: Bookmark
+                      ) => ({
+                        user_id: user.id,
+
+                        product_id:
+                          item.productId,
+                      })
+                    );
+
+                // INSERT
+                if (
+                  bookmarksToInsert.length >
+                  0
+                ) {
+                  await supabase
+                    .from(
+                      "bookmarks"
+                    )
+                    .insert(
+                      bookmarksToInsert
+                    );
+                }
+
+                // CLEAR GUEST STORAGE
+                localStorage.removeItem(
+                  "guest-bookmarks"
+                );
+              }
+            }
+
+            // LOAD FINAL BOOKMARKS
+            await loadBookmarks();
+          }
+        }
+      );
+
+    return () => {
+      mounted = false;
+
+      subscription.unsubscribe();
+    };
   }, []);
 
-  // Save bookmarks to localStorage when they change
-  useEffect(() => {
-    if (isHydrated) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks));
-      } catch (error) {
-        console.error('Failed to save bookmarks:', error);
+  // ───────────────────────────────────
+  // LOAD BOOKMARKS
+  // ───────────────────────────────────
+  async function loadBookmarks() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    // ── GUEST USER ───────────────────
+    if (!user) {
+      const guestBookmarks =
+        localStorage.getItem(
+          "guest-bookmarks"
+        );
+
+      if (guestBookmarks) {
+        setBookmarks(
+          JSON.parse(
+            guestBookmarks
+          )
+        );
+      } else {
+        setBookmarks([]);
       }
+
+      return;
     }
-  }, [bookmarks, isHydrated]);
 
-  const addBookmark = (productId: string) => {
-    setBookmarks((prev) => {
-      if (prev.some((b) => b.productId === productId)) {
-        return prev;
-      }
-      return [...prev, { productId, timestamp: Date.now() }];
-    });
-  };
+    // ── LOGGED USER ──────────────────
+    const { data, error } =
+      await supabase
+        .from("bookmarks")
+        .select("*")
+        .eq("user_id", user.id);
 
-  const removeBookmark = (productId: string) => {
-    setBookmarks((prev) => prev.filter((b) => b.productId !== productId));
-  };
+    if (error) {
+      console.log(error);
 
-  const isBookmarked = (productId: string) => {
-    return bookmarks.some((b) => b.productId === productId);
-  };
+      return;
+    }
 
-  const toggleBookmark = (productId: string) => {
-    if (isBookmarked(productId)) {
-      removeBookmark(productId);
+    if (data) {
+      setBookmarks(
+        data.map((item) => ({
+          productId:
+            item.product_id,
+        }))
+      );
+    }
+  }
+
+  // ───────────────────────────────────
+  // ADD BOOKMARK
+  // ───────────────────────────────────
+  async function addBookmark(
+    productId: string
+  ) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    // ── GUEST USER ───────────────────
+    if (!user) {
+      const exists =
+        bookmarks.some(
+          (b) =>
+            b.productId ===
+            productId
+        );
+
+      if (exists) return;
+
+      const updatedBookmarks =
+        [
+          ...bookmarks,
+          { productId },
+        ];
+
+      setBookmarks(
+        updatedBookmarks
+      );
+
+      localStorage.setItem(
+        "guest-bookmarks",
+        JSON.stringify(
+          updatedBookmarks
+        )
+      );
+
+      return;
+    }
+
+    // ── LOGGED USER ──────────────────
+    const { error } =
+      await supabase
+        .from("bookmarks")
+        .insert([
+          {
+            user_id: user.id,
+
+            product_id:
+              productId,
+          },
+        ]);
+
+    if (error) {
+      console.log(error);
+
+      return;
+    }
+
+    setBookmarks((prev) => [
+      ...prev,
+      { productId },
+    ]);
+  }
+
+  // ───────────────────────────────────
+  // REMOVE BOOKMARK
+  // ───────────────────────────────────
+  async function removeBookmark(
+    productId: string
+  ) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    // ── GUEST USER ───────────────────
+    if (!user) {
+      const updatedBookmarks =
+        bookmarks.filter(
+          (b) =>
+            b.productId !==
+            productId
+        );
+
+      setBookmarks(
+        updatedBookmarks
+      );
+
+      localStorage.setItem(
+        "guest-bookmarks",
+        JSON.stringify(
+          updatedBookmarks
+        )
+      );
+
+      return;
+    }
+
+    // ── LOGGED USER ──────────────────
+    const { error } =
+      await supabase
+        .from("bookmarks")
+        .delete()
+        .eq("user_id", user.id)
+        .eq(
+          "product_id",
+          productId
+        );
+
+    if (error) {
+      console.log(error);
+
+      return;
+    }
+
+    setBookmarks((prev) =>
+      prev.filter(
+        (b) =>
+          b.productId !==
+          productId
+      )
+    );
+  }
+
+  // ───────────────────────────────────
+  // CHECK BOOKMARK
+  // ───────────────────────────────────
+  function isBookmarked(
+    productId: string
+  ) {
+    return bookmarks.some(
+      (b) =>
+        b.productId ===
+        productId
+    );
+  }
+
+  // ───────────────────────────────────
+  // TOGGLE BOOKMARK
+  // ───────────────────────────────────
+  async function toggleBookmark(
+    productId: string
+  ) {
+    if (
+      isBookmarked(productId)
+    ) {
+      await removeBookmark(
+        productId
+      );
     } else {
-      addBookmark(productId);
+      await addBookmark(
+        productId
+      );
     }
-  };
+  }
 
   return (
     <BookmarkContext.Provider
-      value={{ bookmarks, addBookmark, removeBookmark, isBookmarked, toggleBookmark }}
+      value={{
+        bookmarks,
+
+        addBookmark,
+
+        removeBookmark,
+
+        isBookmarked,
+
+        toggleBookmark,
+      }}
     >
       {children}
     </BookmarkContext.Provider>
@@ -84,9 +394,16 @@ export function BookmarkProvider({ children }: { children: ReactNode }) {
 }
 
 export function useBookmarks() {
-  const context = useContext(BookmarkContext);
-  if (context === undefined) {
-    throw new Error('useBookmarks must be used within a BookmarkProvider');
+  const context =
+    useContext(
+      BookmarkContext
+    );
+
+  if (!context) {
+    throw new Error(
+      "useBookmarks must be used within BookmarkProvider"
+    );
   }
+
   return context;
 }

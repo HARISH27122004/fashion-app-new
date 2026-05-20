@@ -1,11 +1,10 @@
-// app/orders/page.tsx
 "use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import Loader from "@/components/Loader";
 import Header from "@/components/Header";
-import styles from "./orders.module.css";
 
 export default function OrdersPage() {
   const router = useRouter();
@@ -17,90 +16,60 @@ export default function OrdersPage() {
   async function fetchMyOrders() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/login"); return; }
-
-    const { data, error } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("id", { ascending: false });
-
+    const { data, error } = await supabase.from("orders").select("*").eq("user_id", user.id).order("id", { ascending: false });
     if (error) { console.log(error); return; }
     if (data) setOrders(data);
     setLoading(false);
   }
 
-  if (loading) {
-    return (
-      <>
-        {/*
-          No props — getRouteConfig("/orders") auto-configures:
-            showMenu: true, showSearch: true, showBack: true, title: "ORDERS"
-          Back → router.back() → previous page, fallback "/"
-        */}
-        <Header />
-        <main style={{ padding: "24px", textAlign: "center", color: "var(--color-text-tertiary)" }}>
-          <p style={{ fontFamily: "var(--font-sans)", marginTop: 40 }}>Loading orders...</p>
-        </main>
-      </>
-    );
+  async function cancelOrder(orderId: number) {
+    if (!window.confirm("Cancel this order?")) return;
+    const { error } = await supabase.from("orders").update({ orders_status: "Cancelled" }).eq("id", orderId);
+    if (error) { console.log(error); alert("Failed to cancel order"); return; }
+    setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, orders_status: "Cancelled" } : o));
+    alert("Order Cancelled");
   }
+
+  if (loading) return <><Header /><Loader /></>;
 
   return (
     <>
-      {/* No props — route config provides showBack + all nav icons automatically */}
       <Header />
-
-      <main style={{ padding: "24px 24px 100px", maxWidth: "700px", margin: "0 auto" }}>
-        <h1 style={{
-          fontFamily: "var(--font-display)",
-          fontSize: "clamp(24px,4vw,36px)",
-          marginBottom: 24,
-        }}>
-          My Orders
-        </h1>
-
-        {orders.length === 0 ? (
-          <div style={{
-            textAlign: "center",
-            padding: "60px 0",
-            color: "var(--color-text-tertiary)",
-            fontFamily: "var(--font-sans)",
-          }}>
-            <p style={{ fontSize: 15 }}>No orders found.</p>
-          </div>
-        ) : (
-          <div style={{ display: "grid", gap: "14px" }}>
-            {orders.map((order) => (
-              <div key={order.id} style={{
-                border: "1px solid var(--color-border)",
-                padding: "20px 24px",
-                borderRadius: "12px",
-                background: "var(--color-bg)",
-                fontFamily: "var(--font-sans)",
-              }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                  <strong style={{ fontSize: 15 }}>Order #{order.id}</strong>
-                  <span style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: "0.05em",
-                    padding: "3px 10px",
-                    borderRadius: 20,
-                    background: order.orders_status === "Delivered" ? "#f0fdf4" : "#f5f5f5",
-                    color: order.orders_status === "Delivered" ? "#16a34a" : "#555",
+      <main style={{ padding: "24px" }}>
+        <div style={{ display: "grid", gap: "18px", marginTop: "24px" }}>
+          {orders.length === 0 && <p style={{ color: "#888" }}>No orders yet.</p>}
+          {orders.map((order) => (
+            <Link href={`/orders/${order.id}`} key={order.id} style={{ textDecoration: "none", color: "inherit" }}>
+              <div style={{ background: "#fff", borderRadius: "24px", padding: "22px", border: "1px solid #eee", boxShadow: "0 4px 20px rgba(0,0,0,0.04)", cursor: "pointer" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+                  <h2 style={{ fontSize: "20px", fontWeight: 700 }}>
+                    Ordered on {new Date(order.created_at).toLocaleDateString()}
+                  </h2>
+                  <div style={{
+                    padding: "8px 14px", borderRadius: "999px", fontSize: "14px", fontWeight: 600,
+                    background: order.orders_status === "Delivered" ? "#dcfce7" : order.orders_status === "Cancelled" ? "#fee2e2" : "#fef3c7",
+                    color: order.orders_status === "Delivered" ? "#166534" : order.orders_status === "Cancelled" ? "#991b1b" : "#92400e",
                   }}>
                     {order.orders_status}
-                  </span>
+                  </div>
                 </div>
-                <div style={{ display: "grid", gap: 4, fontSize: 13, color: "var(--color-text-secondary)" }}>
-                  <p>Total: <strong style={{ color: "#111" }}>₹{order.total_amount}</strong></p>
-                  <p>Payment: {order.payment_status}</p>
-                  <p>Address: {order.address}</p>
+                <div style={{ display: "grid", gap: "10px" }}>
+                  <p><strong>Total:</strong> ₹{order.total_amount}</p>
+                  <p><strong>Payment:</strong> {order.payment_status}</p>
+                  <p><strong>Address:</strong> {order.address}</p>
                 </div>
+                {order.orders_status !== "Delivered" && order.orders_status !== "Cancelled" && (
+                  <div style={{ marginTop: "20px" }}>
+                    <button
+                      onClick={(e) => { e.preventDefault(); cancelOrder(order.id); }}
+                      style={{ padding: "12px 18px", borderRadius: "12px", border: "none", background: "#ef4444", color: "#fff", cursor: "pointer", fontWeight: 600 }}
+                    >Cancel Order</button>
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        )}
+            </Link>
+          ))}
+        </div>
       </main>
     </>
   );

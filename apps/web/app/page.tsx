@@ -50,6 +50,8 @@ const STORES = [
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("default");
+  const [maxPrice, setMaxPrice] = useState(10000);
   const [products, setProducts] = useState<any[]>([]);
   const [activeToasts, setActiveToasts] = useState<ToastItem[]>([]);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -98,17 +100,24 @@ export default function Home() {
     if (value === "all") clearSearch();
   }
 
-  const filteredProducts = products.filter((p) => {
-    const matchesCategory = selectedCategory === "all" ? true : p.category === selectedCategory;
-    const q = searchQuery.trim().toLowerCase();
-    const matchesSearch =
-      q === ""
-        ? true
-        : p.name?.toLowerCase().includes(q) ||
-          p.category?.toLowerCase().includes(q) ||
-          String(p.price).includes(q);
-    return matchesCategory && matchesSearch;
-  });
+  const filteredProducts = products
+    .filter((p) => {
+      const matchesCategory = selectedCategory === "all" ? true : p.category === selectedCategory;
+      const q = searchQuery.trim().toLowerCase();
+      const matchesSearch =
+        q === ""
+          ? true
+          : p.name?.toLowerCase().includes(q) ||
+            p.category?.toLowerCase().includes(q) ||
+            String(p.price).includes(q);
+      return matchesCategory && matchesSearch && Number(p.price) <= maxPrice;
+    })
+    .sort((a, b) => {
+      if (sortBy === "low-high") return Number(a.price) - Number(b.price);
+      if (sortBy === "high-low") return Number(b.price) - Number(a.price);
+      if (sortBy === "newest") return Number(b.id) - Number(a.id);
+      return 0;
+    });
 
   const total = products.length;
 

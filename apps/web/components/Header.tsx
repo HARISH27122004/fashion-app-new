@@ -164,7 +164,7 @@ export default function Header(props: HeaderProps) {
   const { searchQuery } = useSearch();
   const panelRef = useRef<HTMLElement>(null);
 
-  const { items: cartItems } = useCart();
+  const { cart: cartItems } = useCart();
   const notifications        = useNotifications();
   const cartCount  = cartItems.reduce((sum, i) => sum + i.quantity, 0);
   const notifCount = notifications.length;
@@ -277,7 +277,7 @@ export default function Header(props: HeaderProps) {
           </div>
 
           {isHome
-            ? <Link href="/" className={styles.brand}>𝕱𝖆𝖘𝖍𝖎𝖔𝖓𝕯𝖎𝖗𝖙</Link>
+            ? <Link href="/" className={styles.brand}>𝕾𝖙𝖚𝖉𝖎𝖔 𝕯𝖎𝖗𝖙</Link>
             : <span className={styles.pageTitle}>{pageTitle}</span>
           }
 

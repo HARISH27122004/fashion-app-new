@@ -18,7 +18,7 @@ export default function ProductDetail() {
   const [modalMode, setModalMode] = useState<"cart" | "bookmark">("cart");
 
   const { isBookmarked, toggleBookmark } = useBookmarks();
-  const { removeFromCart, getQuantity } = useCart();
+  const { decrementFromCart, getQuantity } = useCart();
 
   useEffect(() => { fetchProduct(); }, []);
 
@@ -119,7 +119,7 @@ export default function ProductDetail() {
           <div className={styles.qtyControl}>
             {quantity > 0 ? (
               <>
-                <button className={styles.qtyBtn} onClick={() => removeFromCart(product.id)} aria-label="Remove one">
+                <button className={styles.qtyBtn} onClick={() => decrementFromCart(product.id)} aria-label="Remove one">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 </button>
                 <span className={styles.qtyCount}>{quantity}</span>

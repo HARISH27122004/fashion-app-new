@@ -16,7 +16,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, index = 0 }: ProductCardProps) {
   const { isBookmarked, toggleBookmark } = useBookmarks();
-  const { getQuantity, removeFromCart } = useCart();
+  const { getQuantity, decrementFromCart, removeFromCart } = useCart();
   const bookmarked = isBookmarked(product.id);
   const quantity = getQuantity(product.id);
 
@@ -125,7 +125,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
               <div className={styles.qtyRow} role="group" aria-label="Quantity">
                 <button
                   className={styles.qtyBtn}
-                  onClick={() => removeFromCart(product.id)}
+                  onClick={() => decrementFromCart(product.id)}
                   aria-label="Remove one"
                 >
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
