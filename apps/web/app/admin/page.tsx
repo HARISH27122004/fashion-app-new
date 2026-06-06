@@ -57,7 +57,7 @@ export default function AdminPage() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      router.push("/admin/login");
+      window.location.href = "/admin/login";
       return;
     }
 
@@ -78,8 +78,16 @@ export default function AdminPage() {
   }
 
   async function handleLogout() {
-    await supabase.auth.signOut();
-    router.push("/admin/login");
+    // Clear ALL supabase auth keys from localStorage (v2 key format varies by project)
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("sb-") || key.includes("supabase")) {
+        localStorage.removeItem(key);
+      }
+    });
+    // Best-effort server-side signout (don't await - don't let it block)
+    supabase.auth.signOut().catch(() => {});
+    // Hard redirect immediately
+    window.location.replace("/admin/login");
   }
 
   // ── Orders logic ──────────────────────────────────────

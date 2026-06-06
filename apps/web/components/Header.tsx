@@ -31,6 +31,8 @@ function getRouteConfig(pathname: string): RouteConfig {
     return { showMenu: true, showSearch: true, showBack: true, title: "NOTIFICATIONS", backFallback: "/" };
   if (pathname === "/orders")
     return { showMenu: true, showSearch: true, showBack: true, title: "ORDERS",        backFallback: "/" };
+  if (pathname === "/discover")
+    return { showMenu: true, showSearch: true, showBack: true, title: "DISCOVER",      backFallback: "/" };
 
   if (pathname === "/login")
     return { showBack: true, title: "SIGN IN",  backFallback: "/" };
@@ -334,7 +336,7 @@ export default function Header(props: HeaderProps) {
           )}
 
           {isHome
-            ? <Link href="/" className={styles.mobileBrand}>𝕱𝖆𝖘𝖍𝖎𝖔𝖓𝕯𝖎𝖗𝖙</Link>
+            ? <Link href="/" className={styles.mobileBrand}>𝕾𝖙𝖚𝖉𝖎𝖔 𝕯𝖎𝖗𝖙</Link>
             : <span className={styles.mobilePageTitle}>{pageTitle}</span>
           }
 

@@ -83,7 +83,7 @@ export default function AdminLoginPage() {
     if (
       data?.role === "admin"
     ) {
-      router.push("/admin");
+      window.location.replace("/admin");
     }
 
     // NOT ADMIN

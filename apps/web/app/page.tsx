@@ -206,7 +206,7 @@ export default function Home() {
         {/* ══ 2. SECTION HEADER ══ */}
         <div className={styles.sectionHeader} id="product-grid">
           <h2 className={styles.sectionTitle}>Latest drop</h2>
-          <button className={styles.sectionMore}>Discover more</button>
+          <a href="/discover" className={styles.sectionMore}>Discover more</a>
         </div>
 
         {/* ══ 3. PRODUCT GRID ══ */}
